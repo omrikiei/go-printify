@@ -16,18 +16,19 @@ const (
 )
 
 type Blueprint struct {
-	Id     int      `json:"id"`
-	Title  string   `json:"title"`
-	Brand  string   `json:"brand"`
-	Model  string   `json:"model"`
-	Images []string `json:"images"`
+	Id          int      `json:"id"`
+	Title       string   `json:"title"`
+	Description string   `json:"description"`
+	Brand       string   `json:"brand"`
+	Model       string   `json:"model"`
+	Images      []string `json:"images"`
 }
 
 type PrintProvider struct {
-	Id       int               `json:"id"`
-	Title    string            `json:"title"`
-	Location map[string]string `json:"location"`
-	Variants []CatalogVariant  `json:"variants"`
+	Id       int                `json:"id"`
+	Title    string             `json:"title"`
+	Location *map[string]string `json:"location,omitempty"`
+	Variants []*CatalogVariant  `json:"variants,omitempty"`
 }
 
 type CatalogVariant struct {
@@ -75,7 +76,7 @@ func (c *Client) ListBluePrints() ([]*Blueprint, error) {
 		return nil, err
 	}
 	blueprintList := make([]*Blueprint, 0)
-	_, err = c.do(req, blueprintList)
+	_, err = c.do(req, &blueprintList)
 	return blueprintList, err
 }
 
@@ -101,7 +102,7 @@ func (c *Client) GetPrintProviders(b *Blueprint) ([]*PrintProvider, error) {
 		return nil, err
 	}
 	providers := make([]*PrintProvider, 0)
-	_, err = c.do(req, providers)
+	_, err = c.do(req, &providers)
 	return providers, err
 }
 
@@ -114,7 +115,7 @@ func (c *Client) GetVariants(b *Blueprint, p *PrintProvider) ([]*CatalogVariant,
 		return nil, err
 	}
 	variants := make([]*CatalogVariant, 0)
-	_, err = c.do(req, variants)
+	_, err = c.do(req, &variants)
 	return variants, err
 }
 
@@ -140,7 +141,7 @@ func (c *Client) GetAvailablePrintProviders() ([]*PrintProvider, error) {
 		return nil, err
 	}
 	providers := make([]*PrintProvider, 0)
-	_, err = c.do(req, providers)
+	_, err = c.do(req, &providers)
 	return providers, err
 }
 

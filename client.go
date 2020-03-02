@@ -78,6 +78,7 @@ func (c *Client) do(req *http.Request, v interface{}) (*http.Response, error) {
 	if resp.StatusCode >= 400 {
 		return resp, errors.New(fmt.Sprintf("%d", resp.StatusCode))
 	}
+	fmt.Println(resp.Body)
 	err = json.NewDecoder(resp.Body).Decode(v)
 	return resp, err
 }

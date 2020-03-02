@@ -1,7 +1,7 @@
 package go_printify
 
 import (
-	"golang.org/x/tools/go/ssa/interp/testdata/src/fmt"
+	"fmt"
 	"net/http"
 )
 
@@ -24,8 +24,9 @@ func (c *Client) ListShops() ([]*Shop, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(req)
 	shopList := make([]*Shop, 0)
-	_, err = c.do(req, shopList)
+	_, err = c.do(req, &shopList)
 	return shopList, err
 }
 
@@ -33,10 +34,10 @@ func (c *Client) ListShops() ([]*Shop, error) {
 Disconnect a shop
 */
 func (c *Client) DeleteShop(Id int) error {
-	req, err := c.newRequest(http.MethodDelete, fmt.Sprint(disconnectShopPath, Id), nil)
+	req, err := c.newRequest(http.MethodDelete, fmt.Sprintf(disconnectShopPath, Id), nil)
 	if err != nil {
 		return err
 	}
-	_, err = c.do(req, struct{}{})
+	_, err = c.do(req, &struct{}{})
 	return err
 }

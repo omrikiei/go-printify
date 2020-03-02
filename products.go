@@ -12,33 +12,33 @@ const (
 	publishProductPath = "shops/%d/products/%d/publish.json"
 	publishSuccessPath = "shops/%d/products/%d/publishing_succeeded.json"
 	publishFailedPath  = "shops/%d/products/%d/publishing_failed.json"
-	unpublishPath = "shops/%d/products/%d/unpublish.json"
+	unpublishPath      = "shops/%d/products/%d/unpublish.json"
 )
 
 type Product struct {
-	Id                     int                      `json:"id"`
+	Id                     *int                     `json:"id,omitempty"`
 	Title                  string                   `json:"title"`
 	Description            string                   `json:"description"`
 	Tags                   []string                 `json:"tags"`
 	Options                []map[string]interface{} `json:"options"`
 	Variants               []ProductVariant         `json:"variants"`
 	Images                 []ProductMockUpImage     `json:"images"`
-	CreatedAt              time.Time                `json:"created_at"`
-	UpdatedAt              time.Time                `json:"updated_at"`
+	CreatedAt              time.Time                `json:"created_at,omitempty"`
+	UpdatedAt              time.Time                `json:"updated_at,omitempty"`
 	Visible                bool                     `json:"visible"`
 	BlueprintId            int                      `json:"blueprint_id"`
 	PrintProviderId        int                      `json:"print_provider_id"`
 	UserId                 int                      `json:"user_id"`
 	ShopId                 int                      `json:"shop_id"`
-	PrintAreas             []PrintArea              `json:"print_areas"`
-	PrintDetails           PrintDetails             `json:"print_details"`
-	External               []External               `json:"external"`
+	PrintAreas             []*PrintArea             `json:"print_areas"`
+	PrintDetails           *PrintDetails            `json:"print_details"`
+	External               []*External              `json:"external"`
 	IsLocked               bool                     `json:"is_locked"`
 	SalesChannelProperties []string                 `json:"sales_channel_properties"`
 }
 
 type ProductVariant struct {
-	Id          int     `json:"id"`
+	Id          *int    `json:"id"`
 	Sku         string  `json:"sku"`
 	Price       float32 `json:"price"`
 	Cost        float32 `json:"cost"`
@@ -76,6 +76,8 @@ type ProductImage struct {
 }
 
 type PrintArea struct {
+	VariantIds   []int                `json:"variant_ids"`
+	Placeholders []ProducePlaceholder `json:"placeholders"`
 }
 
 type PrintDetails struct {
@@ -98,17 +100,17 @@ type External struct {
 /*
 Retrieve a list of products
 */
-func (c *Client) GetProducts(shopId int, page int) ([]*Product, error) {
+func (c *Client) GetProducts(shopId int, page *int) ([]*Product, error) {
 	path := fmt.Sprintf(productsPath, shopId)
-	if page != 1 {
-		path = fmt.Sprintf("%s?page=%d", path, page)
+	if page != nil {
+		path = fmt.Sprintf("%s?page=%d", path, &page)
 	}
 	req, err := c.newRequest(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, err
 	}
 	products := make([]*Product, 0)
-	_, err = c.do(req, products)
+	_, err = c.do(req, &products)
 	return products, err
 }
 
@@ -193,7 +195,7 @@ func (c *Client) SetProductPublishSuccess(shopId, productId int, external Extern
 
 /*
 Set product publish status to failed
- */
+*/
 func (c *Client) SetProductPublishFailre(shopId, productId int, reason string) error {
 	path := fmt.Sprintf(publishFailedPath, shopId, productId)
 	req, err := c.newRequest(http.MethodPost, path, map[string]string{"reason": reason})
@@ -206,8 +208,8 @@ func (c *Client) SetProductPublishFailre(shopId, productId int, reason string) e
 
 /*
 Notify that a product has been unpublished
- */
-func (c *Client) Unpublish(shopId, productId int) error {
+*/
+func (c *Client) UnPublish(shopId, productId int) error {
 	path := fmt.Sprintf(unpublishPath, shopId, productId)
 	req, err := c.newRequest(http.MethodPost, path, nil)
 	if err != nil {
@@ -216,4 +218,3 @@ func (c *Client) Unpublish(shopId, productId int) error {
 	_, err = c.do(req, nil)
 	return err
 }
-
