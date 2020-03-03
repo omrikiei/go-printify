@@ -142,7 +142,7 @@ func TestClient_GetBlueprint(t *testing.T) {
 	}
 }
 
-func TestClient_GetPrintProviders(t *testing.T) {
+func TestClient_GetAvailablePrintProviders(t *testing.T) {
 	printProviders := []*PrintProvider{
 		{
 			Id:    3,
@@ -193,5 +193,172 @@ func TestClient_GetPrintProviders(t *testing.T) {
 	if !reflect.DeepEqual(resPrintProviders, printProviders) {
 		fmt.Println(resPrintProviders, printProviders)
 		t.Fail()
+	}
+}
+
+func TestClient_GetPrintProviders(t *testing.T) {
+	printProviders := []*PrintProvider{
+		{
+			Id:    3,
+			Title: "DJ",
+		},
+		{
+			Id:    8,
+			Title: "Fifth Sun",
+		},
+		{
+			Id:    16,
+			Title: "MyLocker",
+		},
+		{
+			Id:    24,
+			Title: "Inklocker",
+		},
+	}
+	s := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(200)
+		_, _ = rw.Write([]byte(`[
+			{
+				"id": 3,
+				"title": "DJ"
+			},
+			{
+				"id": 8,
+				"title": "Fifth Sun"
+			},
+			{
+				"id": 16,
+				"title": "MyLocker"
+			},
+			{
+				"id": 24,
+				"title": "Inklocker"
+			}
+	]`))
+	}))
+	client := NewClient("bla")
+	serverUrl, _ := url.Parse(s.URL)
+	client.BaseURL = serverUrl
+	defer s.Close()
+	resPrintProviders, err := client.GetPrintProviders(5)
+	if err != nil {
+		fmt.Println(err)
+	}
+	if !reflect.DeepEqual(resPrintProviders, printProviders) {
+		fmt.Println(resPrintProviders, printProviders)
+		t.Fail()
+	}
+}
+
+func TestClient_GetVariants(t *testing.T) {
+	pp := PrintProvider{
+		Id:    3,
+		Title: "DJ",
+		Variants: []*CatalogVariant{
+			{
+				Id:    17390,
+				Title: "Heather Grey / XS",
+				Options: &CatalogVariantOption{
+					Color: "Heather Grey",
+					Size:  "XS",
+				},
+				Placeholders: []*CatalogPlaceholder{
+					{
+						Position: "back",
+						Height:   3995,
+						Width:    3153,
+					},
+					{
+						Position: "front",
+						Height:   3995,
+						Width:    3153,
+					},
+				},
+			},
+			{
+				Id:    17426,
+				Title: "Solid Black / XS",
+				Options: &CatalogVariantOption{
+					Color: "Solid Black",
+					Size:  "XS",
+				},
+				Placeholders: []*CatalogPlaceholder{
+					{
+						Position: "back",
+						Height:   3995,
+						Width:    3153,
+					},
+					{
+						Position: "front",
+						Height:   3995,
+						Width:    3153,
+					},
+				},
+			},
+		},
+	}
+
+	s := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(200)
+		_, _ = rw.Write([]byte(`{
+    "id": 3,
+    "title": "DJ",
+    "variants": [
+        {
+            "id": 17390,
+            "title": "Heather Grey / XS",
+            "options": {
+                "color": "Heather Grey",
+                "size": "XS"
+            },
+            "placeholders": [
+                {
+                    "position": "back",
+                    "height": 3995,
+                    "width": 3153
+                },
+                {
+                    "position": "front",
+                    "height": 3995,
+                    "width": 3153
+                }
+            ]
+        },
+        {
+            "id": 17426,
+            "title": "Solid Black / XS",
+            "options": {
+                "color": "Solid Black",
+                "size": "XS"
+            },
+            "placeholders": [
+                {
+                    "position": "back",
+                    "height": 3995,
+                    "width": 3153
+                },
+                {
+                    "position": "front",
+                    "height": 3995,
+                    "width": 3153
+                }
+            ]
+        }
+	]
+}`))
+	}))
+	client := NewClient("bla")
+	serverUrl, _ := url.Parse(s.URL)
+	client.BaseURL = serverUrl
+	defer s.Close()
+	resPp, err := client.GetVariants(3, 5)
+	if err != nil {
+		fmt.Println(err)
+	}
+	for i, v := range resPp.Variants {
+		if !reflect.DeepEqual(v, pp.Variants[i]) {
+			fmt.Println(v, pp.Variants[i])
+			t.Fail()
+		}
 	}
 }

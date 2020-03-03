@@ -32,10 +32,10 @@ type PrintProvider struct {
 }
 
 type CatalogVariant struct {
-	Id           int                    `json:"id"`
-	Title        string                 `json:"title"`
-	Options      []CatalogVariantOption `json:"options"`
-	Placeholders []CatalogPlaceholder   `json:"placeholders"`
+	Id           int                   `json:"id"`
+	Title        string                `json:"title"`
+	Options      *CatalogVariantOption `json:"options"`
+	Placeholders []*CatalogPlaceholder `json:"placeholders"`
 }
 
 type CatalogVariantOption struct {
@@ -96,8 +96,8 @@ func (c *Client) GetBlueprint(Id int) (*Blueprint, error) {
 /*
 Retrieve a list of all print providers that fulfill orders for a specific blueprint
 */
-func (c *Client) GetPrintProviders(b *Blueprint) ([]*PrintProvider, error) {
-	req, err := c.newRequest(http.MethodGet, fmt.Sprintf(blueprintProvidersPath, b.Id), nil)
+func (c *Client) GetPrintProviders(blueprintId int) ([]*PrintProvider, error) {
+	req, err := c.newRequest(http.MethodGet, fmt.Sprintf(blueprintProvidersPath, blueprintId), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -109,21 +109,21 @@ func (c *Client) GetPrintProviders(b *Blueprint) ([]*PrintProvider, error) {
 /*
 Retrieve a list of variants of a blueprint from a specific print provider
 */
-func (c *Client) GetVariants(b *Blueprint, p *PrintProvider) ([]*CatalogVariant, error) {
-	req, err := c.newRequest(http.MethodGet, fmt.Sprintf(BlueprintProviderVariantsPath, b.Id, p.Id), nil)
+func (c *Client) GetVariants(blueprintId, providerId int) (*PrintProvider, error) {
+	req, err := c.newRequest(http.MethodGet, fmt.Sprintf(BlueprintProviderVariantsPath, blueprintId, providerId), nil)
 	if err != nil {
 		return nil, err
 	}
-	variants := make([]*CatalogVariant, 0)
-	_, err = c.do(req, &variants)
-	return variants, err
+	printProvider := &PrintProvider{}
+	_, err = c.do(req, printProvider)
+	return printProvider, err
 }
 
 /*
 Retrieve shipping information
 */
-func (c *Client) GetShippingInformation(b *Blueprint, p *PrintProvider) (*ShippingProperties, error) {
-	req, err := c.newRequest(http.MethodGet, fmt.Sprintf(BluePrintProviderShippingPath, b.Id, p.Id), nil)
+func (c *Client) GetShippingInformation(blueprintId, providerId int) (*ShippingProperties, error) {
+	req, err := c.newRequest(http.MethodGet, fmt.Sprintf(BluePrintProviderShippingPath, blueprintId, providerId), nil)
 	if err != nil {
 		return nil, err
 	}
